@@ -122,9 +122,6 @@ html {
 
 
 /* add new project button */
-.main-project-button {
-
-}
 
 
 
@@ -133,15 +130,42 @@ html {
     flex: 7;
     background-color: rgb(218, 215, 215);
     padding: 40px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.task-icon {
+    width: 24px;
+    height: 24px;
+    background: url('./circle.svg');
+}
+
+.task-delete {
+    width: 24px;
+    height: 24px;
+    background: url('./x.svg');
+    opacity: 0;
+}
+
+.task-description {
+    padding-right: 600px;
+}
+
+.task:hover .task-delete {
+    opacity: 1;
 }
 
 /* buttons */
 .button {
     text-align: left;
-}
-
-.button:hover {
-    
 }
 
 .tab {
