@@ -23,6 +23,7 @@ main components
 
 steps
 - create example page html
+- buttons should have a delete button only visible when hover
 - create add task button
     - use constructor to make the tasks
 - make sure tasks correctly displayed on the all tasks page
