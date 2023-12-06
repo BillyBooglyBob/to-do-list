@@ -76,7 +76,7 @@ html {
     padding: 10px;
 }
 
-.main-projects {
+#main-projects {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -138,6 +138,8 @@ html {
     width: 24px;
     height: 24px;
     background: url('./circle.svg');
+
+    flex: 1;
 }
 
 .task-delete {
@@ -145,11 +147,18 @@ html {
     height: 24px;
     background: url('./x.svg');
     opacity: 0;
+
+    flex: 1;
 }
 
 .task-description {
-    padding-right: 600px;
+    flex: 23;
 }
+
+.task-date {
+    flex: 10;
+}
+
 
 .task:hover .task-delete {
     opacity: 1;

@@ -37,127 +37,294 @@ steps
 
 - create tasks, project, mainProject
 - separate modules for model, view and control
-- 
+- link Add Project and Add Task button to access a form
+- form, redraw, model, control (function that uses model and redraw, button calls these)
 */
 
-import './style.css';
-class Task {
-    #description;
-    #dueDate;
+import './css/style.css';
+import './css/form.css';
+import { Task, Project, MainProject } from './modules/model';
 
-    constructor(description) {
-        this.#description = description;
-        // default date, can be overriden
-        this.#dueDate = "No Date";
+
+/* variable to save which project currently selected
+- when project clicked, retrieve the current elements innerText
+- go through list of projects and check which one has that name
+- if its "All Tasks" or "Today" then run different functions
+        to retrieve the tasks and pass it to update task 
+
+1 - select project
+2 - display relevant tasks
+3 - add tasks
+4 - delete button
+*/
+
+
+class UI {
+    #mainProject;
+    #projectSelected;
+    
+    initialise() {
+        this.addFormToButtons();
+        this.updateSelectProjectButtons();
+        this.#mainProject = new MainProject();
+        this.#projectSelected = "All tasks";
     }
 
-    getDescription() {
-        return this.#description;
+    getProjectSelected() {
+        return this.#projectSelected;
+    }
+
+    setProjectSelected(projectSelected) {
+        this.#projectSelected = projectSelected;
+    }
+
+    openForm(formName) {
+        document.getElementById(formName).style.display = "block";
     }
     
-    getDueDate() {
-        return this.#dueDate;
+    closeForm(formName, event) {
+        event.preventDefault();
+        switch (formName) {
+            case "project": 
+                document.getElementById("project-form").style.display = "none";
+                document.getElementById("project-name").value = "";
+                break;
+            case "task":
+                document.getElementById("task-form").style.display = "none";
+                document.getElementById("task-name").value = "";
+                document.getElementById("task-due-date").value = "";
+                break;
+        }
     }
-}
+    
+    submitForm(formName, event) {
+        event.preventDefault();
+        switch (formName) {
+            case "project":
+                const projectName = document.getElementById("project-name").value;
+                this.createNewProject(projectName);
+                break;
+            case "task":
+                const taskName = document.getElementById("task-name").value;
+                const taskDueDate = document.getElementById("task-due-date").value;
+                this.createNewTask(taskName, taskDueDate);
+                break;
+        }
 
-class Project {
-    #projectName;
-    #tasks;
-
-    constructor(projectName) {
-        this.#projectName = projectName;
-        this.#tasks = [];
+        this.closeForm(formName, event);
+    }
+    
+    addFormToTaskButton() {
+        const taskButton = document.getElementById("main-task-button");
+        taskButton.addEventListener("click", () => this.openForm("task-form"));
+    
+        const submitButton = document.getElementById("task-form-container");
+        submitButton.addEventListener("submit", (event) => this.submitForm("task", event));
+    
+        const deleteButton = document.getElementById("task-cancel");
+        deleteButton.addEventListener("click", (event) => this.closeForm("task", event));
+    }
+    
+    addFormToProjectButton() {
+        const projectButton = document.getElementById("main-project-button");
+        projectButton.addEventListener("click", () => this.openForm("project-form"));
+    
+        const submitButton = document.getElementById("project-form-container");
+        submitButton.addEventListener("submit", (event) => this.submitForm("project", event));
+    
+        const deleteButton = document.getElementById("project-cancel");
+        deleteButton.addEventListener("click", (event) => this.closeForm("project", event));
     }
 
-    addTask(task) {
-        const duplicateTask = this.#tasks.some(taskA => taskA.getDescription() === task.getDescription());
-        if (duplicateTask) {
-            alert("Task already exists");
+    addSelectProjectButtons() {
+        let projects = document.getElementsByClassName("project-description");
+        projects = Array.from(projects);
+        projects.forEach(project => {
+            project.addEventListener("click", function() {
+                const projectName = this.textContent;
+            })
+        });
+    }
+    
+    // add function to the buttons
+    addFormToButtons() {
+        this.addFormToTaskButton();
+        this.addFormToProjectButton();
+        this.addSelectProjectButtons();   
+    }
+
+    updateSelectProjectButtons() {
+        this.selectProjectButtons();
+    }
+
+    updateDeleteButtons() {
+        this.deleteProjectButton();
+        this.deleteTaskButton();
+    }
+
+    // create new tasks and projects
+    // plus updating the view 
+
+    updateView() {
+        this.updateProjects();
+        this.updateTasks();
+        this.updateSelectProjectButtons();
+        this.updateDeleteButtons();
+        
+    }
+
+    createNewProject(projectName) {
+        const newProject = new Project(projectName);
+        this.#mainProject.addProject(newProject);
+        this.updateView();
+    }
+    
+    createNewTask(description, date) {
+        const newTask = new Task(description, date);
+        this.#mainProject.addTaskToProject(this.#projectSelected, newTask);
+        this.updateView();
+    }
+
+    updateProjects() {
+        // clear old projects list
+        this.clearProjects();
+
+        // // append new updated projects list
+        const projectsList = document.getElementById("main-projects");
+
+        this.#mainProject.getProjects().forEach(project => {
+            if (project.getProjectName() != "All tasks" 
+                && project.getProjectName() != "Today") {
+                const projectToAdd = document.createElement("div");
+                projectToAdd.innerHTML += `
+                    <div class="project tab">
+                        <div class="project-icon"></div>
+                        <div class="project-description">${project.getProjectName()}</div>
+                        <div class="project-delete"></div>
+                    </div>
+                `;
+
+                projectsList.append(projectToAdd);
+            }
+        });
+    }
+
+    clearProjects() {
+        const projectsList = document.getElementById("main-projects");
+        projectsList.innerHTML = '';
+    }
+
+    updateTasks() {
+        // clear old tasks list
+        this.clearTasks();
+
+        // append new tasks list based on selected project
+        const taskList = document.getElementById("main-tasks");
+        let projectToDisplay;
+        let projectToDisplayTasks;
+
+        if (this.#projectSelected === "Today") {
+            projectToDisplayTasks = this.#mainProject.getTasksDueToday();
+        } else if (this.#projectSelected === "All tasks") {
+            projectToDisplayTasks = this.#mainProject.getAllTasks();
         } else {
-            this.#tasks.push(task);
+            projectToDisplay = this.#mainProject.getProjectUsingName(this.#projectSelected);
+            projectToDisplayTasks = projectToDisplay.getTasks();
         }
+        
+        projectToDisplayTasks.forEach(task => {
+            const taskToAdd = document.createElement("div");
+            taskToAdd.innerHTML += `
+            <div class="task tab">
+                        <div class="task-icon"></div>
+                        <div class="task-description">${task.getDescription()}</div>
+                        <div class="task-date">${task.getDueDate()}</div>
+                        <div class="task-delete"></div>
+            </div>`
+
+        taskList.appendChild(taskToAdd);
+        })
     }
 
-    removeTask(task) {
-        const index = this.#tasks.indexOf(task);
-        if (index != -1) {
-            this.#tasks.splice(index, 1);
+    clearTasks() {
+        const taskList = document.getElementById("main-tasks");
+        taskList.innerHTML = '';
+    }
+
+
+    // select projects
+    selectProjectButtons() {
+        let projects = document.getElementsByClassName("project");
+        projects = Array.from(projects);
+
+        projects.forEach(project => {
+            project.addEventListener("click", 
+            () => this.selectUpdateProject(project.textContent.trim()));
+        });
+    }
+
+    selectUpdateProject(projectName) {
+        // do not run if the project was deleted
+        if (this.#mainProject.getProjectUsingName(projectName) != -1) {
+            this.setProjectSelected(projectName);
         }
+        this.updateView();
     }
 
-    getProjectName() {
-        return this.#projectName;
+    // delete project
+    deleteProjectButton() {
+        let projects = document.getElementsByClassName("project-delete");
+        projects = Array.from(projects);
+
+        projects.forEach(project => {
+            project.addEventListener("click",
+            () => {
+                // Get the project description element
+                const projectDescriptionElement = project.previousElementSibling;
+    
+                // Get the project name from the project description element
+                const projectName = projectDescriptionElement.textContent.trim();
+                this.deleteProject(projectName);
+                
+            });
+        })
     }
 
-    getTasks() {
-        return this.#tasks;
+    deleteProject(projectName) {
+        this.#mainProject.removeProject(projectName);
+        this.updateView();
+
+        // set project selected back to the default
+        this.#projectSelected = "All tasks";
+    }
+
+    // delete task
+    deleteTaskButton() {
+        let tasks = document.getElementsByClassName("task-delete");
+        tasks = Array.from(tasks);
+
+        tasks.forEach(task => {
+            task.addEventListener("click",
+            () => {
+                // Get the project description element
+                let taskDescriptionElement = task.previousElementSibling;
+                taskDescriptionElement = taskDescriptionElement.previousElementSibling;
+
+    
+                // Get the project name from the project description element
+                const taskName = taskDescriptionElement.textContent.trim();
+                this.deleteTask(this.#projectSelected, taskName);
+                
+            });
+        })
+    }
+
+    deleteTask(projectName, taskName) {
+        this.#mainProject.removeTaskFromProject(projectName, taskName);
+        this.updateView();
     }
 }
 
-class MainProject {
-    #projects;
+const initialisation = new UI();
+initialisation.initialise();
 
-    constructor() {
-        this.#projects = [];
-    }
-
-    addProject(project) {
-        const duplicateProject = this.#projects.some(projectA => 
-            projectA.getProjectName() === project.getProjectName());
-        if (duplicateProject) {
-            alert("Project already exists");
-        } else {
-            this.#projects.push(project);
-        }
-    }
-
-    getProject(projectName) {
-        return this.#projects.find(project => project.getProjectName() === projectName);
-    }
-
-    getAllTasks() {
-        const allTasks = this.#projects.reduce((allTasks, project) => allTasks.concat(project.getTasks()), []);
-
-        const sortedTasks = allTasks.sort((taskA, taskB) => new Date(taskA.getDueDate()) - new Date(taskB.getDueDate()));
-        return sortedTasks;
-    }
-
-    getTasksDueToday() {
-        const today = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
-    
-        // Use flatMap to extract tasks from all projects into a single array
-        const allTasks = this.getAllTasks();
-    
-        // Filter tasks that are due today
-        const tasksDueToday = allTasks.filter(task => task.getDueDate() === today);
-    
-        return tasksDueToday;
-      }
-}
-
-
-// Example usage:
-const mainProject = new MainProject();
-
-const projectA = new Project('Project A');
-const projectADuplicate = new Project('Project A');
-const projectB = new Project('Project B');
-
-const task1 = new Task('Task 1');
-
-const task2 = new Task('Task 2');
-const task3 = new Task('Task 3');
-
-projectA.addTask(task1);
-projectA.addTask(task2);
-
-projectB.addTask(task3);
-
-mainProject.addProject(projectA);
-mainProject.addProject(projectB);
-
-const tasksDueToday = mainProject.getAllTasks();
-console.log(tasksDueToday);
-
-const today = new Date().toISOString().split('T')[0]; // the current date is kinda wrong (does it use US time?)
-console.log(today);

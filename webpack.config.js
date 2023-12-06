@@ -33,7 +33,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
       },
     ],
   },
-  devtool: 'inline-source-map',
 	devServer: {
     static: './src',
   },

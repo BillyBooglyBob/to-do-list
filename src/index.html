@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=\, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo List</title>
     <link rel="icon" href="check-square.svg">
 </head>
@@ -15,33 +15,48 @@
         <div class="main">
             <div class="main-sidebar">
                 <div class="main-list">
-                    <div class="main-list-all tab">All tasks</div>
-                    <div class="main-list-today tab">Today</div>
+                    <div class="main-list-all project tab">All tasks</div>
+                    <div class="main-list-today project tab">Today</div>
                 </div>
                 <div class="main-project-container">
                     <div class="main-project-title">Projects</div>
-                    <div class="main-projects">
-                        <div class="project tab">
-                            <div class="project-icon"></div>
-                            <div class="project-description">Project 1</div>
-                            <div class="project-delete"></div>
-                        </div>
+                    <div id="main-projects">
+
                     </div>
                 </div>
-                <button class="main-project-button button tab">+ Add Project</button>
+                <button class="button tab" id="main-project-button">+ Add Project</button>
             </div>
             <div class="main-task-container">
-                <div class="main-tasks">
-                    <div class="task tab">
-                        <div class="task-icon"></div>
-                        <div class="task-description">A random task</div>
-                        <div class="task-date"></div>
-                        <div class="task-delete"></div>
-                    </div>
+                <div id="main-tasks">
+
                 </div>
-                <button class="main-task-button button tab">+ Add Task</button>
+                <button class="button tab" id="main-task-button">+ Add Task</button>
             </div>
         </div>
+    </div>
+
+    <div id="project-form">
+        <form id="project-form-container">
+          <h1>Create new project</h1>
+      
+          <label for="project-name"><b>Project name</b></label>
+          <input type="text" id="project-name" placeholder="Enter Project Name" name="project-name" autocomplete="on" required>
+          <button type="submit" class="btn">Create</button>
+          <button type="button" class="btn" id="project-cancel">Cancel</button>
+        </form>
+    </div>
+
+    <div id="task-form">
+        <form id="task-form-container">
+          <h1>Create new task</h1>
+      
+          <label for="task-name"><b>Task name</b></label>
+          <input type="text" id="task-name" placeholder="Enter Task Name" name="task-name" autocomplete="on" required>
+          <label for="task-due-date"><b>Due date</b></label>
+          <input type="date" id="task-due-date" placeholder="Select due date" name="task-due-date" autocomplete="on" required>
+          <button type="submit" class="btn">Create</button>
+          <button type="button" class="btn" id="task-cancel">Cancel</button>
+        </form>
     </div>
 </body>
 </html>
